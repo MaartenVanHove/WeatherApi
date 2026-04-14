@@ -14,7 +14,7 @@ class Transportrepositoryimpl implements TripRepository {
     // Change return type to List<Trip>
     String fromStation,
     String toStation,
-    String arrivalTime,
+    DateTime arrivalTime,
   ) async {
     final response = await apiService.fetchTrips(
       fromStation,

@@ -49,7 +49,7 @@ class CommuteScreen extends StatelessWidget {
 
               if (snapshot.hasData) {
                 final morning = snapshot.data!["morning"]!;
-                final evening = snapshot.data!['evening']!;
+                final afternoon = snapshot.data!['afternoon']!;
 
                 return Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -125,9 +125,9 @@ class CommuteScreen extends StatelessWidget {
                           Expanded(
                             child: _buildWeatherCard(
                               title: "EVENING",
-                              temp: "${evening.temp.round()}°C",
+                              temp: "${afternoon.temp.round()}°C",
                               time: "4:00 PM",
-                              desc: evening.description,
+                              desc: afternoon.description,
                               colors: [Colors.deepPurpleAccent, Colors.indigo],
                             ),
                           ),

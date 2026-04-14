@@ -20,11 +20,11 @@ class GetCommuteForecast {
       orElse: () => fullList.first, // Fallback
     );
 
-    final evening = fullList.firstWhere(
+    final afternoon = fullList.firstWhere(
       (w) => w.time.hour == 16 && w.time.day == DateTime.now().day + 1,
       orElse: () => fullList.first,
     );
 
-    return {'morning': morning, 'evening': evening};
+    return {'morning': morning, 'afternoon': afternoon};
   }
 }

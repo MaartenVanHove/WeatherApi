@@ -4,6 +4,6 @@ abstract class TripRepository {
   Future<List<Trip>> getTrip(
     String fromStation,
     String toStation,
-    String arrivalTime,
+    DateTime arrivalTime,
   );
 }

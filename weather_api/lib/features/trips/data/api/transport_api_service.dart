@@ -7,7 +7,7 @@ class TransportApiService {
   Future<http.Response> fetchTrips(
     String fromStation,
     String toStation,
-    String arrivalTime,
+    DateTime arrivalTime,
   ) async {
     return http.get(
       Uri.parse(
