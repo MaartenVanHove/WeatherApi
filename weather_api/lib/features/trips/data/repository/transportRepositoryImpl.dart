@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:weather_api/data/api/transport_api_service.dart';
-import 'package:weather_api/domain/entities/transport/trip.dart';
-import 'package:weather_api/domain/repositories/transport_repository.dart';
+import 'package:weather_api/features/trips/data/api/transport_api_service.dart';
+import 'package:weather_api/features/trips/domain/entities/trip.dart';
+import 'package:weather_api/features/trips/domain/repository/transport_repository.dart';
 
 class Transportrepositoryimpl implements TripRepository {
   final TransportApiService apiService;

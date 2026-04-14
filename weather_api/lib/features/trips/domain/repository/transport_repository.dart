@@ -1,4 +1,4 @@
-import 'package:weather_api/domain/entities/transport/trip.dart';
+import 'package:weather_api/features/trips/domain/entities/trip.dart';
 
 abstract class TripRepository {
   Future<List<Trip>> getTrip(

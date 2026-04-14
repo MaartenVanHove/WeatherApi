@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:weather_api/data/api/api_service.dart';
-import 'package:weather_api/domain/entities/weather.dart';
-import 'package:weather_api/domain/repositories/weather_repository.dart'; // Import this to use jsonDecode
+import 'package:weather_api/features/weather/data/api/weather_api_service.dart';
+import 'package:weather_api/features/weather/domain/entities/weather.dart';
+import 'package:weather_api/features/weather/domain/repository/weather_repository.dart'; // Import this to use jsonDecode
 
 class WeatherRepositoryImpl implements WeatherRepository {
   final WeatherApiService apiService;

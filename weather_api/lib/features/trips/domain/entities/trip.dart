@@ -1,4 +1,4 @@
-import 'package:weather_api/domain/entities/transport/leg.dart';
+import 'package:weather_api/features/trips/domain/entities/leg.dart';
 
 class Trip {
   final String? tripId;

@@ -1,6 +1,6 @@
 // domain/usecases/get_commute_forecast.dart
-import 'package:weather_api/domain/entities/weather.dart';
-import 'package:weather_api/domain/repositories/weather_repository.dart';
+import 'package:weather_api/features/weather/domain/entities/weather.dart';
+import 'package:weather_api/features/weather/domain/repository/weather_repository.dart';
 
 class GetCommuteForecast {
   final WeatherRepository repository;
