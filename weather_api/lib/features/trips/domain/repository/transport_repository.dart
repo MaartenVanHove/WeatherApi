@@ -1,7 +1,7 @@
-import 'package:weather_api/domain/entities/transport/leg.dart';
+import 'package:weather_api/domain/entities/transport/trip.dart';
 
 abstract class TripRepository {
-  Future<List<Leg>> getTrip(
+  Future<List<Trip>> getTrip(
     String fromStation,
     String toStation,
     String arrivalTime,
