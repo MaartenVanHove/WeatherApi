@@ -4,7 +4,7 @@ import 'package:weather_api/features/trips/domain/repository/transport_repositor
 class GetCommuteTrip {
   final TripRepository tripRepository;
 
-  const GetCommuteTrip({required this.tripRepository});
+  const GetCommuteTrip(this.tripRepository);
 
   Future<Trip> execute(
     String fromStation,

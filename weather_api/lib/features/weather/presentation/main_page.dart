@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_api/features/trips/data/api/transport_api_service.dart';
+import 'package:weather_api/features/trips/data/repository/transportRepositoryImpl.dart';
+import 'package:weather_api/features/trips/domain/usecases/get_commute_trip.dart';
 import 'package:weather_api/features/weather/data/api/weather_api_service.dart';
 import 'package:weather_api/features/weather/data/repositories/weather_repository_impl.dart';
 import 'package:weather_api/features/weather/domain/entities/weather.dart';
@@ -17,6 +20,10 @@ class CommuteScreen extends StatelessWidget {
     final apiService = WeatherApiService();
     final repository = WeatherRepositoryImpl(apiService);
     final getCommuteWeather = GetCommuteForecast(repository);
+
+    final tripApiService = TripApiService();
+    final tripRepository = TripRepositoryImpl(tripApiService);
+    final getCommuteTrip = GetCommuteTrip(tripRepository);
 
     return Scaffold(
       body: Container(

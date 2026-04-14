@@ -4,10 +4,10 @@ import 'package:weather_api/features/trips/data/api/transport_api_service.dart';
 import 'package:weather_api/features/trips/domain/entities/trip.dart';
 import 'package:weather_api/features/trips/domain/repository/transport_repository.dart';
 
-class Transportrepositoryimpl implements TripRepository {
-  final TransportApiService apiService;
+class TripRepositoryImpl implements TripRepository {
+  final TripApiService apiService;
 
-  Transportrepositoryimpl(this.apiService);
+  TripRepositoryImpl(this.apiService);
 
   @override
   Future<List<Trip>> getTrip(
