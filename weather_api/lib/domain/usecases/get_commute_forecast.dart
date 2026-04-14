@@ -21,7 +21,7 @@ class GetCommuteForecast {
     );
 
     final evening = fullList.firstWhere(
-      (w) => w.time.hour == 18 && w.time.day == DateTime.now().day + 1,
+      (w) => w.time.hour == 16 && w.time.day == DateTime.now().day + 1,
       orElse: () => fullList.first,
     );
 

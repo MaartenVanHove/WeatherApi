@@ -4,16 +4,20 @@ import 'package:weather_api/data/api/api_service.dart';
 import 'package:weather_api/data/repositories/weather_repository_impl.dart';
 import 'package:weather_api/domain/entities/weather.dart';
 import 'package:weather_api/domain/usecases/get_commute_forecast.dart';
-import 'package:weather_api/presentation/weather/weather_screen.dart';
 
 class CommuteScreen extends StatelessWidget {
   const CommuteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat(
+    final String formattedDate = DateFormat(
       'd MMM',
     ).format(DateTime.now()).toUpperCase();
+
+    final apiService = WeatherApiService();
+    final repository = WeatherRepositoryImpl(apiService);
+    final getCommuteWeather = GetCommuteForecast(repository);
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -25,100 +29,134 @@ class CommuteScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "DAILY COMMUTE",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
+          child: FutureBuilder<Map<String, Weather>>(
+            future: getCommuteWeather.execute(52.3676, 4.9041),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.orangeAccent),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    "Error: ${snapshot.error}",
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          "TODAY, $formattedDate",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            letterSpacing: 1.2,
-                          ),
+                );
+              }
+
+              if (snapshot.hasData) {
+                final morning = snapshot.data!["morning"]!;
+                final evening = snapshot.data!['evening']!;
+
+                return Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "DAILY COMMUTE",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Header Date Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white10,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
                           children: [
-                            Icon(
-                              Icons.location_on,
-                              color: Colors.white70,
-                              size: 24,
-                            ),
-                            SizedBox(width: 4),
                             Text(
-                              "AMSTERDAM",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                              "TODAY, $formattedDate",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 16,
                                 letterSpacing: 1.2,
                               ),
                             ),
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.location_on,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  "AMSTERDAM",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildWeatherCard(
-                          title: "MORNING",
-                          temp: "6°C",
-                          time: "9:00 AM",
-                          desc: "Partly Cloudy",
-                          colors: [Colors.orangeAccent, Colors.deepOrange],
-                        ),
                       ),
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: _buildWeatherCard(
-                          title: "AFTERNOON",
-                          temp: "11°C",
-                          time: "6:00 PM",
-                          desc: "Clear",
-                          colors: [Colors.deepPurpleAccent, Colors.indigo],
-                        ),
+
+                      const SizedBox(height: 30),
+
+                      // Weather Forecast Cards
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildWeatherCard(
+                              title: "MORNING",
+                              temp: "${morning.temp.round()}°C",
+                              time: "9:00 AM",
+                              desc: morning.description,
+                              colors: [Colors.orangeAccent, Colors.deepOrange],
+                            ),
+                          ),
+                          const SizedBox(width: 15),
+                          Expanded(
+                            child: _buildWeatherCard(
+                              title: "EVENING",
+                              temp: "${evening.temp.round()}°C",
+                              time: "4:00 PM",
+                              desc: evening.description,
+                              colors: [Colors.deepPurpleAccent, Colors.indigo],
+                            ),
+                          ),
+                        ],
                       ),
+
+                      const SizedBox(height: 25),
+
+                      _buildTrainCard(),
                     ],
                   ),
-                  SizedBox(height: 20),
-                  _buildTrainCard(),
-                ],
-              ),
-            ),
+                );
+              }
+
+              // Fallback for unexpected empty data
+              return const Center(
+                child: Text(
+                  "No data available",
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            },
           ),
         ),
       ),
     );
   }
 
+  // Helper method for Weather Cards
   Widget _buildWeatherCard({
     required String title,
     required String temp,
@@ -127,10 +165,12 @@ class CommuteScreen extends StatelessWidget {
     required List<Color> colors,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(25),
         gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
             colors[0].withValues(alpha: 0.8),
             colors[1].withValues(alpha: 0.8),
@@ -138,38 +178,37 @@ class CommuteScreen extends StatelessWidget {
         ),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 10),
           Text(
             temp,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            time,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 21,
+              fontSize: 36,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             desc,
-            style: TextStyle(
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            time,
+            style: const TextStyle(
               color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -177,6 +216,7 @@ class CommuteScreen extends StatelessWidget {
     );
   }
 
+  // Helper method for the Train UI
   Widget _buildTrainCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -236,32 +276,3 @@ class CommuteScreen extends StatelessWidget {
     );
   }
 }
-
-// Column(
-//         children: [
-//           IconButton(
-//             icon: Icon(Icons.refresh),
-//             onPressed: () async {
-//               final apiService = WeatherApiService();
-//               final repository = WeatherRepositoryImpl(apiService);
-
-//               final getCommuteWeather = GetCommuteForecast(repository);
-
-//               try {
-//                 final commute = await getCommuteWeather.execute(
-//                   52.3676,
-//                   4.9041,
-//                 );
-
-//                 final morning = commute['morning']!;
-//                 final evening = commute['evening']!;
-
-//                 print("MORNING: ${morning.temp}°C, ${morning.description}");
-//                 print("EVENING: ${evening.temp}°C, ${evening.description}");
-//               } catch (e) {
-//                 print("Error: $e");
-//               }
-//             },
-//           ),
-//         ],
-//       ),
