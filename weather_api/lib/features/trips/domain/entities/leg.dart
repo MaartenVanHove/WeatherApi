@@ -1,11 +1,10 @@
-import 'dart:ffi';
-
 class Leg {
   final String name;
   final String direction;
   final String origin;
   final String destination;
-  final DateTime plannedTime;
+  final DateTime plannedTimeDepartment;
+  final DateTime plannedTimeArrival;
   final String originTrack; // Fixed spelling to 'origin'
   final String destinationTrack;
   final int stops;
@@ -15,7 +14,8 @@ class Leg {
     required this.direction,
     required this.origin,
     required this.destination,
-    required this.plannedTime,
+    required this.plannedTimeDepartment,
+    required this.plannedTimeArrival,
     required this.originTrack,
     required this.destinationTrack,
     required this.stops,
@@ -27,7 +27,12 @@ class Leg {
       direction: json['direction'] as String,
       origin: json['origin']['name'] as String,
       destination: json['destination']['name'] as String,
-      plannedTime: DateTime.parse(json['origin']['plannedDateTime'] as String),
+      plannedTimeDepartment: DateTime.parse(
+        json['origin']['plannedDateTime'] as String,
+      ),
+      plannedTimeArrival: DateTime.parse(
+        json['destination']['plannedDateTime'] as String,
+      ),
       originTrack: json['origin']['plannedTrack'] ?? 'N/A',
       destinationTrack: json['destination']['plannedTrack'] ?? 'N/A',
       // Handling 'stops'—if it's a list in JSON, we take the length

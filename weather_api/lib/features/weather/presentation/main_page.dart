@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_api/features/trips/data/api/transport_api_service.dart';
 import 'package:weather_api/features/trips/data/repository/transportRepositoryImpl.dart';
+import 'package:weather_api/features/trips/domain/entities/leg.dart';
 import 'package:weather_api/features/trips/domain/usecases/get_commute_trip.dart';
 import 'package:weather_api/features/weather/data/api/weather_api_service.dart';
 import 'package:weather_api/features/weather/data/repositories/weather_repository_impl.dart';
@@ -17,17 +18,25 @@ class CommuteScreen extends StatelessWidget {
       'd MMM',
     ).format(DateTime.now()).toUpperCase();
 
-    final apiService = WeatherApiService();
-    final repository = WeatherRepositoryImpl(apiService);
-    final getCommuteWeather = GetCommuteForecast(repository);
+    final now = DateTime.now();
 
-    final tripApiService = TripApiService();
-    final tripRepository = TripRepositoryImpl(tripApiService);
-    final getCommuteTrip = GetCommuteTrip(tripRepository);
+    final DateTime dateTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      8, // Hour
+      30, // Minute
+    );
+
+    final getCommuteWeather = GetCommuteForecast(
+      WeatherRepositoryImpl(WeatherApiService()),
+    );
+    final getCommuteTrip = GetCommuteTrip(TripRepositoryImpl(TripApiService()));
 
     return Scaffold(
       body: Container(
         width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -36,88 +45,75 @@ class CommuteScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: FutureBuilder<Map<String, Weather>>(
-            future: getCommuteWeather.execute(52.3676, 4.9041),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.orangeAccent),
-                );
-              }
-
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    "Error: ${snapshot.error}",
-                    style: const TextStyle(color: Colors.white),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "DAILY COMMUTE",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
                   ),
-                );
-              }
-
-              if (snapshot.hasData) {
-                final morning = snapshot.data!["morning"]!;
-                final afternoon = snapshot.data!['afternoon']!;
-
-                return Padding(
-                  padding: const EdgeInsets.all(20.0),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        "DAILY COMMUTE",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
+                      Text(
+                        "TODAY, $formattedDate",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 10),
-
-                      // Header Date Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white10,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              "TODAY, $formattedDate",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 16,
-                                letterSpacing: 1.2,
-                              ),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            "AMSTERDAM",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  "AMSTERDAM",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-
-                      const SizedBox(height: 30),
-
-                      // Weather Forecast Cards
-                      Row(
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 30),
+                FutureBuilder<Map<String, Weather>>(
+                  future: getCommuteWeather.execute(52.3676, 4.9041),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.orangeAccent,
+                        ),
+                      );
+                    }
+                    if (snapshot.hasData) {
+                      final morning = snapshot.data!["morning"]!;
+                      final afternoon = snapshot.data!['afternoon']!;
+                      return Row(
                         children: [
                           Expanded(
                             child: _buildWeatherCard(
@@ -139,31 +135,47 @@ class CommuteScreen extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ),
-
-                      const SizedBox(height: 25),
-
-                      _buildTrainCard(),
-                    ],
-                  ),
-                );
-              }
-
-              // Fallback for unexpected empty data
-              return const Center(
-                child: Text(
-                  "No data available",
-                  style: TextStyle(color: Colors.white),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
-              );
-            },
+                const SizedBox(height: 25),
+                Expanded(
+                  child: FutureBuilder(
+                    future: getCommuteTrip.execute('asdm', 'ass', dateTime),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.blueAccent,
+                          ),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return const Text(
+                          "Error getting trips",
+                          style: TextStyle(color: Colors.red),
+                        );
+                      }
+                      if (snapshot.hasData) {
+                        return SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: _buildTrainCard(snapshot.data!.legs),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Helper method for Weather Cards
   Widget _buildWeatherCard({
     required String title,
     required String temp,
@@ -223,8 +235,7 @@ class CommuteScreen extends StatelessWidget {
     );
   }
 
-  // Helper method for the Train UI
-  Widget _buildTrainCard() {
+  Widget _buildTrainCard(List<Leg> legs) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -235,6 +246,7 @@ class CommuteScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             "BEST TRAIN OPTIONS",
@@ -245,41 +257,107 @@ class CommuteScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 15),
-          _trainRow("09:07", "09:24", "NS Intercity", "Zuid"),
-          const Divider(color: Colors.white10),
-          _trainRow("18:03", "18:21", "NS Sprinter", "Centraal"),
+          for (int i = 0; i < legs.length; i++) ...[
+            if (i > 0) const Divider(color: Colors.white10, height: 20),
+            _trainRow(legs[i]),
+          ],
         ],
       ),
     );
   }
 
-  Widget _trainRow(String start, String end, String type, String dest) {
+  Widget _trainRow(Leg leg) {
+    final startTime = leg.plannedTimeDepartment.toString().substring(11, 16);
+    final endTime = leg.plannedTimeArrival.toString().substring(11, 16);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.train, color: Colors.white70),
-          const SizedBox(width: 15),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Icon(Icons.train, color: Colors.orangeAccent, size: 22),
+              const SizedBox(height: 4),
               Text(
-                "$start → $end",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                type,
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
+                "${leg.stops} stops",
+                style: const TextStyle(color: Colors.white38, fontSize: 9),
               ),
             ],
           ),
-          const Spacer(),
-          Text(dest, style: const TextStyle(color: Colors.white70)),
+          const SizedBox(width: 15),
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "$startTime → $endTime",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "${leg.name} • Dir: ${leg.direction}",
+                  style: const TextStyle(
+                    color: Colors.orangeAccent,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _stationTrackRow(leg.origin, leg.originTrack),
+                const Icon(
+                  Icons.arrow_downward,
+                  size: 12,
+                  color: Colors.white24,
+                ),
+                _stationTrackRow(leg.destination, leg.destinationTrack),
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _stationTrackRow(String station, String track) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Flexible(
+          child: Text(
+            station,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            track,
+            style: const TextStyle(
+              color: Colors.orangeAccent,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
