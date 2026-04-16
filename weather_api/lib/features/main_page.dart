@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-// Import Data Layer (for initialization)
 import 'package:weather_api/features/trips/data/api/transport_api_service.dart';
 import 'package:weather_api/features/trips/data/repository/transportRepositoryImpl.dart';
 import 'package:weather_api/features/trips/presentation/commute_trip_section.dart';
 import 'package:weather_api/features/weather/data/api/weather_api_service.dart';
 import 'package:weather_api/features/weather/data/repositories/weather_repository_impl.dart';
 
-// Import Domain Layer (UseCases)
 import 'package:weather_api/features/weather/domain/usecases/get_commute_forecast.dart';
 import 'package:weather_api/features/trips/domain/usecases/get_commute_trip.dart';
 
-// Import UI Sections
-import 'commute_weather_section.dart';
+import 'weather/presentation/commute_weather_section.dart';
 
 class CommuteScreen extends StatelessWidget {
   const CommuteScreen({super.key});
@@ -27,7 +24,6 @@ class CommuteScreen extends StatelessWidget {
     final now = DateTime.now();
     final DateTime targetTime = DateTime(now.year, now.month, now.day, 11, 00);
 
-    // Dependency Setup
     final getCommuteWeather = GetCommuteForecast(
       WeatherRepositoryImpl(WeatherApiService()),
     );
@@ -65,12 +61,10 @@ class CommuteScreen extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                // --- Weather Section ---
                 CommuteWeatherSection(getCommuteWeather: getCommuteWeather),
 
                 const SizedBox(height: 25),
 
-                // --- Trip Section ---
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),

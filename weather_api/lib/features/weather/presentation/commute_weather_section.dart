@@ -63,7 +63,10 @@ class CommuteWeatherSection extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [colors[0].withOpacity(0.8), colors[1].withOpacity(0.8)],
+          colors: [
+            colors[0].withValues(alpha: 0.8),
+            colors[1].withValues(alpha: 0.8),
+          ],
         ),
       ),
       child: Column(

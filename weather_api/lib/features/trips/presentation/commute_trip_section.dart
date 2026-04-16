@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:weather_api/features/trips/domain/entities/leg.dart';
+import 'package:weather_api/features/trips/domain/entities/trip.dart';
 import 'package:weather_api/features/trips/domain/usecases/get_commute_trip.dart';
 
 class CommuteTripSection extends StatelessWidget {
@@ -29,10 +30,137 @@ class CommuteTripSection extends StatelessWidget {
           );
         }
         if (snapshot.hasData) {
-          return _buildTrainCard(snapshot.data!.legs);
+          return _buildAvailableTrips(snapshot.data!);
         }
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildAvailableTrips(List<Trip> trips) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "BEST TRAIN OPTIONS",
+            style: TextStyle(
+              color: Colors.orangeAccent,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 15),
+          for (int i = 0; i < trips.length; i++) ...[
+            if (trips.isEmpty)
+              Text("No available Trips", style: TextStyle(color: Colors.red)),
+            _buildTripItem(trips[i]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTripItem(Trip trip) {
+    final firstLeg = trip.legs.first;
+    final lastLeg = trip.legs.last;
+
+    final startTime = firstLeg.plannedTimeDepartment.toString().substring(
+      11,
+      16,
+    );
+    final endTime = lastLeg.plannedTimeArrival.toString().substring(11, 16);
+
+    return InkWell(
+      onTap: () => print("CLICK!!"),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Upper Row: The Visual Route Map
+            Row(
+              children: [
+                for (int i = 0; i < trip.legs.length; i++) ...[
+                  if (i > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  _buildTransportPill(),
+                ],
+                const Spacer(),
+                Text(
+                  "${trip.durationInMinutes} min",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Lower Row: Times and Main Direction
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      startTime,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        "→",
+                        style: TextStyle(color: Colors.orangeAccent),
+                      ),
+                    ),
+                    Text(
+                      endTime,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransportPill() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.train, color: Colors.white, size: 24),
+          const SizedBox(width: 4),
+        ],
+      ),
     );
   }
 
@@ -41,7 +169,7 @@ class CommuteTripSection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.orangeAccent.withOpacity(0.5),
+          color: Colors.orangeAccent.withValues(alpha: 0.5),
           width: 3,
         ),
         borderRadius: BorderRadius.circular(25),

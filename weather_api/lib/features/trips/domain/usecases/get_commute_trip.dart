@@ -6,7 +6,7 @@ class GetCommuteTrip {
 
   const GetCommuteTrip(this.tripRepository);
 
-  Future<Trip> execute(
+  Future<List<Trip>> execute(
     String fromStation,
     String toStation,
     DateTime arrivalTime,
@@ -19,6 +19,6 @@ class GetCommuteTrip {
 
     // TODO: Figure out which trip is the best one.
 
-    return trips[0];
+    return trips;
   }
 }
